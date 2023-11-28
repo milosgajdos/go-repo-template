@@ -15,17 +15,19 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
-        go: [ '1.19' ]
+        go:
+          - '1.20'
+          - '1.21'
 
     steps:
 
     - name: Set up Go ${{ matrix.go }}
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go }}
 
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     # copy-pasta from https://github.com/caddyserver/caddy/blob/master/.github/workflows/ci.yml
     - name: Print Go version and environment
@@ -65,14 +67,21 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
-        go: [ '1.19' ]
+        go:
+          - '1.20'
+          - '1.21'
 
     steps:
 
     - name: Check out source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+
+    - name: Set up Go ${{ matrix.go }}
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go }}
 
     - name: Run linter
-      uses: golangci/golangci-lint-action@v2
+      uses: golangci/golangci-lint-action@v3
       with:
-        version: v1.50
+        version: v1.55
