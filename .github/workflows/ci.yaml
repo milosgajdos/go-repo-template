@@ -10,24 +10,30 @@ jobs:
 
   ci:
     name: Run CI
+    env:
+      # Setting GOTOOLCHAIN to local tells go
+      # to to use the bundled Go version rather
+      # than fetching the toolchain according to
+      # toolchain directive found in go.mod.
+      GOTOOLCHAIN: local
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
         go:
-          - '1.21'
           - '1.22'
+          - '1.23'
 
     steps:
+
+    - name: Check out code
+      uses: actions/checkout@v4
 
     - name: Set up Go ${{ matrix.go }}
       uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go }}
-
-    - name: Check out code
-      uses: actions/checkout@v4
 
     # copy-pasta from https://github.com/caddyserver/caddy/blob/master/.github/workflows/ci.yml
     - name: Print Go version and environment
@@ -39,15 +45,15 @@ jobs:
         go env
         printf "\n\nSystem environment:\n\n"
         env
-        echo "::set-output name=go_cache::$(go env GOCACHE)"
+        echo "go_cache=$(go env GOCACHE)" >> $GITHUB_ENV
 
     - name: Cache the build cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
-        path: ${{ steps.vars.outputs.go_cache }}
-        key: ${{ runner.os }}-${{ matrix.go }}-go-ci-${{ hashFiles('**/go.sum') }}
+        path: ${{ env.go_cache }}
+        key: ${{ runner.os }}-${{ matrix.go }}-go-ci-${{ hashFiles('**/go.sum', '**/go.mod') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.go }}-go-ci
+          ${{ runner.os }}-${{ matrix.go }}-go-ci-
 
     - name: Get dependencies
       run: |
@@ -61,6 +67,12 @@ jobs:
 
   lint:
     name: Run golangci linter
+    env:
+      # Setting GOTOOLCHAIN to local tells go
+      # to to use the bundled Go version rather
+      # than fetching the toolchain according to
+      # toolchain directive found in go.mod.
+      GOTOOLCHAIN: local
     timeout-minutes: 5
     runs-on: ${{ matrix.os }}
     strategy:
@@ -68,8 +80,8 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         go:
-          - '1.21'
           - '1.22'
+          - '1.23'
 
     steps:
 
@@ -82,6 +94,6 @@ jobs:
         go-version: ${{ matrix.go }}
 
     - name: Run linter
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v6
       with:
-        version: v1.58
+        version: v1.61
